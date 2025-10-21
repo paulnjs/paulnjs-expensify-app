@@ -9,7 +9,8 @@ import {turnOffMobileSelectionMode} from '@libs/actions/MobileSelectionMode';
 import {changeTransactionsReport} from '@libs/actions/Transaction';
 import Navigation from '@libs/Navigation/Navigation';
 import Permissions from '@libs/Permissions';
-import {hasViolations as hasViolationsReportUtils} from '@libs/ReportUtils';
+import {hasViolations as hasViolationsReportUtils } from '@libs/ReportUtils';
+import type {OptimisticNewReport} from '@libs/ReportUtils';
 import {shouldRestrictUserBillableActions} from '@libs/SubscriptionUtils';
 import {createNewReport} from '@userActions/Report';
 import CONST from '@src/CONST';
@@ -44,21 +45,30 @@ function IOURequestEditReport({route}: IOURequestEditReportProps) {
     const [transactionViolations] = useOnyx(ONYXKEYS.COLLECTION.TRANSACTION_VIOLATIONS, {canBeMissing: true});
     const hasViolations = hasViolationsReportUtils(undefined, transactionViolations);
 
-    const selectReport = (item: TransactionGroupListItem) => {
+    const selectReport = (item: TransactionGroupListItem, shouldCreateNewReport = false) => {
         if (selectedTransactionIDs.length === 0 || item.value === reportID) {
             Navigation.dismissModal();
             return;
         }
 
+        let newReport: OptimisticNewReport | undefined;
+        let newReportID = item.value;
+        if (shouldCreateNewReport) {
+            const createdReport = createNewReport(currentUserPersonalDetails, hasViolations, isASAPSubmitBetaEnabled, policyForMovingExpensesID);
+            newReport = createdReport;
+            newReportID = createdReport.reportID;
+        }
+
         changeTransactionsReport(
             selectedTransactionIDs,
-            item.value,
+            newReportID,
             isASAPSubmitBetaEnabled,
             session?.accountID ?? CONST.DEFAULT_NUMBER_ID,
             session?.email ?? '',
             allPolicies?.[`${ONYXKEYS.COLLECTION.POLICY}${item.policyID}`],
             reportNextStep,
             allPolicyCategories?.[`${ONYXKEYS.COLLECTION.POLICY_CATEGORIES}${item.policyID}`],
+            newReport,
         );
         turnOffMobileSelectionMode();
         clearSelectedTransactions(true);
@@ -89,8 +99,7 @@ function IOURequestEditReport({route}: IOURequestEditReportProps) {
             Navigation.navigate(ROUTES.RESTRICTED_ACTION.getRoute(policyForMovingExpensesID));
             return;
         }
-        const createdReportID = createNewReport(currentUserPersonalDetails, hasViolations, isASAPSubmitBetaEnabled, policyForMovingExpensesID);
-        selectReport({value: createdReportID});
+        selectReport({value: ''}, true);
     };
 
     return (

@@ -2926,6 +2926,7 @@ function buildNewReportOptimisticData(
     return {
         optimisticReportName: optimisticReportData.reportName,
         reportPreviewAction: optimisticReportPreview,
+        optimisticReport: optimisticReportData,
         parentReportID: parentReport?.reportID,
         optimisticData,
         successData,
@@ -2947,7 +2948,7 @@ function createNewReport(
     const reportActionID = rand64();
     const reportPreviewReportActionID = rand64();
 
-    const {optimisticReportName, parentReportID, reportPreviewAction, optimisticData, successData, failureData} = buildNewReportOptimisticData(
+    const {optimisticReportName, parentReportID, reportPreviewAction, optimisticData, successData, failureData, optimisticReport} = buildNewReportOptimisticData(
         policy,
         optimisticReportID,
         reportActionID,
@@ -2966,7 +2967,7 @@ function createNewReport(
         notifyNewAction(parentReportID, creatorPersonalDetails.accountID, reportPreviewAction);
     }
 
-    return optimisticReportID;
+    return optimisticReport;
 }
 
 /**

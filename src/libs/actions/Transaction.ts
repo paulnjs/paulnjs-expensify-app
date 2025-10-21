@@ -650,8 +650,9 @@ function changeTransactionsReport(
     policy?: OnyxEntry<Policy>,
     reportNextStep?: OnyxEntry<ReportNextStep>,
     policyCategories?: OnyxEntry<PolicyCategories>,
+    newReportParam?: OnyxEntry<Report>,
 ) {
-    const newReport = allReports?.[`${ONYXKEYS.COLLECTION.REPORT}${reportID}`];
+    const newReport = newReportParam ?? allReports?.[`${ONYXKEYS.COLLECTION.REPORT}${reportID}`];
 
     const transactions = transactionIDs.map((id) => allTransactions?.[id]).filter((t): t is NonNullable<typeof t> => t !== undefined);
     const transactionIDToReportActionAndThreadData: Record<string, TransactionThreadInfo> = {};
